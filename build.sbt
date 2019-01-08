@@ -16,6 +16,7 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
       "org.http4s" %% "http4s-circe" % Http4sVersion,
       "org.http4s" %% "http4s-dsl" % Http4sVersion,
+      "org.http4s" %% "http4s-twirl" % Http4sVersion,
       "io.circe" %% "circe-generic" % CirceVersion,
       "org.scalamock" %% "scalamock" % "4.1.0" % Test,
       "org.scalatest" %% "scalatest" % "3.0.4" % Test,
@@ -41,6 +42,7 @@ lazy val root = (project in file("."))
   .enablePlugins(GitVersioning)
   .enablePlugins(JavaAppPackaging)
   .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(SbtTwirl)
 
 scalacOptions ++= Seq(
   "-deprecation",

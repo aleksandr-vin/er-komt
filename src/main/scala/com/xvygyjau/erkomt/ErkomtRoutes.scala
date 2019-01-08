@@ -2,8 +2,11 @@ package com.xvygyjau.erkomt
 
 import cats.effect.Sync
 import cats.implicits._
-import org.http4s.HttpRoutes
+import org.http4s.{HttpRoutes, Uri}
 import org.http4s.dsl.Http4sDsl
+import org.http4s.headers.Location
+import play.twirl.api.Html
+import org.http4s.twirl._
 
 object ErkomtRoutes {
 
@@ -43,4 +46,17 @@ object ErkomtRoutes {
     }
   }
 
+  def quizRoutes[F[_]: Sync](H: Quiz[F]): HttpRoutes[F] = {
+    val dsl = new Http4sDsl[F]{}
+    import dsl._
+    HttpRoutes.of[F] {
+      case GET -> Root / "quiz" =>
+        for {
+          phrase <- H.getPhrase
+          resp <- Ok(erkomt.html.phrase(phrase))
+        } yield resp
+      case GET -> Root =>
+        TemporaryRedirect(Location(Uri.uri("quiz")))
+    }
+  }
 }

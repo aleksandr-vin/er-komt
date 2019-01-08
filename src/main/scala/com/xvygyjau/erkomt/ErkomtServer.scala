@@ -24,6 +24,7 @@ object ErkomtServer {
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
       healthAlg = Health.impl[F]
+      quizAlg = Quiz.impl[F]
 
       // Combine Service Routes into an HttpApp
       // Can also be done via a Router if you
@@ -32,7 +33,8 @@ object ErkomtServer {
       httpApp = (
         ErkomtRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
           ErkomtRoutes.jokeRoutes[F](jokeAlg) <+>
-          ErkomtRoutes.healthRoutes[F](healthAlg)
+          ErkomtRoutes.healthRoutes[F](healthAlg) <+>
+        ErkomtRoutes.quizRoutes[F](quizAlg)
       ).orNotFound
 
       // With Middlewares in place
