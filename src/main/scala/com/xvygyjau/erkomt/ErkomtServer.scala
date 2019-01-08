@@ -2,10 +2,6 @@ package com.xvygyjau.erkomt
 
 import cats.effect.{
   ConcurrentEffect,
-  Effect,
-  ExitCode,
-  IO,
-  IOApp,
   Timer,
   ContextShift
 }
@@ -15,8 +11,7 @@ import org.http4s.client.blaze.BlazeClientBuilder
 import org.http4s.implicits._
 import fs2.Stream
 import scala.concurrent.ExecutionContext.global
-
-import org.http4s.server.middleware.Logger
+import org.http4s.server.middleware._
 
 object ErkomtServer {
 
@@ -41,7 +36,7 @@ object ErkomtServer {
       ).orNotFound
 
       // With Middlewares in place
-      finalHttpApp = Logger(true, true)(httpApp)
+      finalHttpApp = Logger(true, true)(GZip(httpApp))
 
       exitCode <- BlazeServerBuilder[F]
         .bindHttp(port, "0.0.0.0")
