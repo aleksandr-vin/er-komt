@@ -1,10 +1,53 @@
-@import com.xvygyjau.erkomt.Quiz.Phrase
+@import com.xvygyjau.erkomt.UnstressedDaar
 
-@(phrase: Phrase)
+@(phrase: UnstressedDaar)
 <html>
+<head>
+    <style>
+.container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    -moz-transform: translateX(-50%) translateY(-50%);
+    -webkit-transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-50%);
+}
+    </style>
+
+    <script>
+document.addEventListener('DOMContentLoaded',function() {
+    document.querySelector('select[id="quiz-select"]').onchange=changeEventHandler;
+},false);
+
+function changeEventHandler(event) {
+    // You can use “this” to refer to the selected element.
+    if (!event.target.value) {
+    }
+    @for(opt <- phrase.answer) {
+    else if (event.target.value == '@opt') {
+      alert('You like it like \'@opt\', cute. And you are right!');
+    }
+    }
+    else {
+      alert('You like it like \'' + event.target.value + '\', nice. But you are wrong.');
+    }
+}
+    </script>
+</head>
 <body>
-<center>
-    <h1>@{phrase.phrase}</h1>
-</center>
+<div class="container">
+    <h1>
+        @{phrase.left}
+
+        <select id="quiz-select">
+            <option value="">__</option>
+            @for(opt <- phrase.quiz) {
+            <option value="@opt">@opt</option>
+            }
+        </select>
+
+        @{phrase.right}
+    </h1>
+</div>
 </body>
 </html>
