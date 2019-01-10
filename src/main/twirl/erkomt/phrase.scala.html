@@ -9,6 +9,18 @@ h1 {
     padding: 5vw;
 }
 
+.styled-select {
+   background: transparent no-repeat 100% 0;
+   overflow: hidden;
+   font-size: 8vh;
+   overflow: hidden;
+}
+
+.styled-select select {
+   border: none;
+   padding: 0px;
+}
+
 @@media screen and (min-width: 601px) {
   .container {
     position: absolute;
@@ -49,12 +61,14 @@ function changeEventHandler(event) {
     <h1>
         @{phrase.left}
 
-        <select id="quiz-select">
+        <span class="styled-select">
+        <select id="quiz-select" class="styled-select">
             <option value="">__</option>
             @for(opt <- phrase.quiz) {
             <option value="@opt">@opt</option>
             }
         </select>
+        </span>
 
         @{phrase.right}
     </h1>
