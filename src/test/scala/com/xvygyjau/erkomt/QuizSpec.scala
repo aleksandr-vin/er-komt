@@ -11,7 +11,7 @@ class QuizSpec extends BaseSpec with Matchers {
   {
     lazy val result = getRoot
 
-    it should "redirect" in {
+    "/" should "redirect" in {
       getRoot.status should be(Status.TemporaryRedirect)
     }
 
@@ -24,9 +24,24 @@ class QuizSpec extends BaseSpec with Matchers {
   }
 
   {
-    lazy val result = retQuiz
+    lazy val result = getQuizRoot
 
-    it should "return 200" in {
+    "/quiz/" should "redirect" in {
+      getRoot.status should be(Status.TemporaryRedirect)
+    }
+
+    it should "redirect to .." in {
+      val header: Option[Location] = result.headers.get(Location)
+
+      header shouldBe defined
+      header.get.value should be("..")
+    }
+  }
+
+  {
+    lazy val result = getSomeQuiz
+
+    "/quiz/b432abf9e90d7abdbda8db220f0e5988" should "return 200" in {
       result.status should be(Status.Ok)
     }
 
@@ -38,16 +53,42 @@ class QuizSpec extends BaseSpec with Matchers {
     }
   }
 
-  private[this] val getRoot: Response[IO] = {
-    val getHW = Request[IO](Method.GET, Uri.uri("/"))
+  {
+    lazy val result = getRandomQuiz
+
+    "/quiz" should "redirect" in {
+      result.status should be(Status.TemporaryRedirect)
+    }
+
+    it should "return to quiz/{key}" in {
+      val header: Option[Location] = result.headers.get(Location)
+
+      header shouldBe defined
+      header.get.value should startWith("quiz/")
+      header.get.value should not be "quiz/"
+    }
+  }
+
+  private[this] def get(uri: Uri): Response[IO] = {
+    val getHW = Request[IO](Method.GET, uri)
     val quiz = Quiz.impl[IO]
     ErkomtRoutes.quizRoutes(quiz).orNotFound(getHW).unsafeRunSync()
   }
 
-  private[this] val retQuiz: Response[IO] = {
-    val getHW = Request[IO](Method.GET, Uri.uri("/quiz"))
-    val quiz = Quiz.impl[IO]
-    ErkomtRoutes.quizRoutes(quiz).orNotFound(getHW).unsafeRunSync()
+  private[this] val getRoot: Response[IO] = {
+    get(Uri.uri("/"))
+  }
+
+  private[this] val getQuizRoot: Response[IO] = {
+    get(Uri.uri("/quiz/"))
+  }
+
+  private[this] val getSomeQuiz: Response[IO] = {
+    get(Uri.uri("/quiz/b432abf9e90d7abdbda8db220f0e5988"))
+  }
+
+  private[this] def getRandomQuiz(): Response[IO] = {
+    get(Uri.uri("/quiz"))
   }
 
 }
