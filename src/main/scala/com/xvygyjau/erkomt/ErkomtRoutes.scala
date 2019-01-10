@@ -54,9 +54,21 @@ object ErkomtRoutes {
     HttpRoutes.of[F] {
       case GET -> Root / "quiz" =>
         for {
-          phrase <- H.getPhrase
+          key <- H.getRandomPhraseKey
+          resp <- Uri
+            .fromString(s"quiz/$key")
+            .fold(
+              { _ => NotFound() },
+              { uri => TemporaryRedirect(Location(uri)) }
+            )
+        } yield resp
+      case GET -> Root / "quiz" / key if !key.isEmpty =>
+        for {
+          phrase <- H.getPhrase(key)
           resp <- Ok(erkomt.html.phrase(phrase))
         } yield resp
+      case GET -> Root / "quiz" / "" =>
+        TemporaryRedirect(Location(Uri.uri("..")))
       case GET -> Root =>
         TemporaryRedirect(Location(Uri.uri("quiz")))
     }
@@ -68,8 +80,7 @@ object ErkomtRoutes {
       ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
     implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-    def static(file: String,
-               request: Request[IO]) =
+    def static(file: String, request: Request[IO]) =
       StaticFile
         .fromResource("/static/" + file, blockingEc, Some(request))
         .getOrElseF(NotFound())
