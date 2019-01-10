@@ -34,7 +34,7 @@ class QuizSpec extends BaseSpec with Matchers {
       val body = result.as[String].unsafeRunSync()
 
       body should include("""</html>""")
-      body should include("""</h1>""")
+      body should include("""</p>""")
     }
   }
 
