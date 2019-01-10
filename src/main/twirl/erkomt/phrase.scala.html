@@ -4,6 +4,22 @@
 <html>
 <head>
     <style>
+
+@defining("Chelsea+Market|Emilys+Candy|Fredericka+the+Great|Kranky|Limelight|Love+Ya+Like+A+Sister|McLaren|Rye|Unkempt") { fonts =>
+@defining(scala.util.Random.shuffle(fonts.replace("+", " ").split('|').toList).head) { font =>
+
+@@import url('https://fonts.googleapis.com/css?family=@{font.replace(" ", "+")}');
+
+.container {
+   font-family: '@font', cursive;
+}
+
+.styled-select select {
+   font-family: '@font', cursive;
+}
+
+}}
+
 h1 {
     font-size: 8vh;
     padding: 5vw;
@@ -42,16 +58,16 @@ document.addEventListener('DOMContentLoaded',function() {
 },false);
 
 function changeEventHandler(event) {
-    // You can use “this” to refer to the selected element.
     if (!event.target.value) {
+      event.target.style.color = '';
     }
     @for(opt <- phrase.answer) {
     else if (event.target.value == '@opt') {
-      alert('You like it like \'@opt\', cute. And you are right!');
+      event.target.style.color = 'green';
     }
     }
     else {
-      alert('You like it like \'' + event.target.value + '\', nice. But you are wrong.');
+      event.target.style.color = 'red';
     }
 }
     </script>
@@ -61,7 +77,7 @@ function changeEventHandler(event) {
     <h1>
         @{phrase.left}
 
-        <span class="styled-select">
+        <span id="quiz" class="styled-select">
         <select id="quiz-select" class="styled-select">
             <option value="">__</option>
             @for(opt <- phrase.quiz) {
