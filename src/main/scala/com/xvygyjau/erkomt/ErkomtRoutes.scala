@@ -1,17 +1,19 @@
 package com.xvygyjau.erkomt
 
-import cats.effect.Sync
+import cats.effect.{ContextShift, IO, Sync}
 import cats.implicits._
-import org.http4s.{HttpRoutes, Uri}
-import org.http4s.dsl.Http4sDsl
+import org.http4s.{HttpRoutes, Request, StaticFile, Uri}
+import org.http4s.dsl._
+import org.http4s.dsl.io._
 import org.http4s.headers.Location
-import play.twirl.api.Html
 import org.http4s.twirl._
+import java.util.concurrent._
+import scala.concurrent.ExecutionContext
 
 object ErkomtRoutes {
 
   def jokeRoutes[F[_]: Sync](J: Jokes[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
+    val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "joke" =>
@@ -23,7 +25,7 @@ object ErkomtRoutes {
   }
 
   def helloWorldRoutes[F[_]: Sync](H: HelloWorld[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
+    val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "hello" / name =>
@@ -35,7 +37,7 @@ object ErkomtRoutes {
   }
 
   def healthRoutes[F[_]: Sync](H: Health[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
+    val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "health" =>
@@ -47,7 +49,7 @@ object ErkomtRoutes {
   }
 
   def quizRoutes[F[_]: Sync](H: Quiz[F]): HttpRoutes[F] = {
-    val dsl = new Http4sDsl[F]{}
+    val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
       case GET -> Root / "quiz" =>
@@ -57,6 +59,28 @@ object ErkomtRoutes {
         } yield resp
       case GET -> Root =>
         TemporaryRedirect(Location(Uri.uri("quiz")))
+    }
+  }
+
+  def staticFilesRoutes: HttpRoutes[IO] = {
+
+    val blockingEc =
+      ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
+    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+
+    def static(file: String,
+               request: Request[IO]) =
+      StaticFile
+        .fromResource("/static/" + file, blockingEc, Some(request))
+        .getOrElseF(NotFound())
+
+    val dsl = new Http4sDsl[IO] {}
+    import dsl._
+    HttpRoutes.of[IO] {
+      case request @ GET -> Root / "static" / path
+          if List(".js", ".css", ".map", ".html", ".webm").exists(
+            path.endsWith) =>
+        static(path, request)
     }
   }
 }

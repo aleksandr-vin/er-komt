@@ -4,13 +4,23 @@
 <html>
 <head>
     <style>
-.container {
+h1 {
+    font-size: 8vh;
+    padding: 5vw;
+}
+
+@@media screen and (min-width: 601px) {
+  .container {
     position: absolute;
     top: 50%;
     left: 50%;
     -moz-transform: translateX(-50%) translateY(-50%);
     -webkit-transform: translateX(-50%) translateY(-50%);
     transform: translateX(-50%) translateY(-50%);
+  }
+}
+
+@@media screen and (max-width: 600px) {
 }
     </style>
 

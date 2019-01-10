@@ -38,7 +38,7 @@ object ErkomtServer {
       ).orNotFound
 
       // With Middlewares in place
-      finalHttpApp = Logger(true, true)(GZip(httpApp))
+      finalHttpApp = Logger(true, true)(httpApp)
 
       exitCode <- BlazeServerBuilder[F]
         .bindHttp(port, "0.0.0.0")
