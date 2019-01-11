@@ -6,7 +6,7 @@ import scala.util.Random
 
 trait Quiz[F[_]] {
   def getPhrase(key: String): F[UnstressedDaar]
-  def getRandomPhraseKey: F[String]
+  def getRandomPhraseKey(skipKey: Option[String]): F[String]
 }
 
 case class UnstressedDaar(left: String,
@@ -32,8 +32,9 @@ object Quiz {
       quizes.table(key)
     }.pure[F]
 
-    def getRandomPhraseKey: F[String] = {
-      Random.shuffle(quizes.table.keys).head
+    def getRandomPhraseKey(skipKey: Option[String]): F[String] = {
+      val randomPhrases = Random.shuffle(quizes.table.keys).toList
+      randomPhrases.filterNot(skipKey.contains(_)).head
     }.pure[F]
   }
 }

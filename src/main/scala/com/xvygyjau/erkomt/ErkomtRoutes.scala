@@ -2,7 +2,7 @@ package com.xvygyjau.erkomt
 
 import cats.effect.{ContextShift, IO, Sync}
 import cats.implicits._
-import org.http4s.{HttpRoutes, Request, StaticFile, Uri}
+import org.http4s.{Headers, HttpRoutes, Request, StaticFile, Uri, headers}
 import org.http4s.dsl._
 import org.http4s.dsl.io._
 import org.http4s.headers.Location
@@ -52,14 +52,18 @@ object ErkomtRoutes {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
-      case GET -> Root / "quiz" =>
+      case request @ GET -> Root / "quiz" =>
+        val refKey = getRefererQuizKey(request.headers)
         for {
-          key <- H.getRandomPhraseKey
+          key <- H.getRandomPhraseKey(refKey)
           resp <- Uri
             .fromString(s"quiz/$key")
             .fold(
-              { _ => NotFound() },
-              { uri => TemporaryRedirect(Location(uri)) }
+              { _ =>
+                NotFound()
+              }, { uri =>
+                TemporaryRedirect(Location(uri))
+              }
             )
         } yield resp
       case GET -> Root / "quiz" / key if !key.isEmpty =>
@@ -93,5 +97,15 @@ object ErkomtRoutes {
             path.endsWith) =>
         static(path, request)
     }
+  }
+
+  private[erkomt] def getRefererQuizKey(requestHeaders: Headers): Option[String] = {
+    headers.Referer
+      .from(requestHeaders)
+      .map(_.uri.path.toString.toList)
+      .collect {
+        case '/' :: 'q' :: 'u' :: 'i' :: 'z' :: '/' :: (key: List[Char]) if key.nonEmpty =>
+          key.mkString
+      }
   }
 }

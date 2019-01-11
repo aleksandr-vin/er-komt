@@ -2,7 +2,7 @@ package com.xvygyjau.erkomt
 
 import cats.effect.IO
 import org.http4s._
-import org.http4s.headers.Location
+import org.http4s.headers.{Location, Referer}
 import org.http4s.implicits._
 import org.scalatest.Matchers
 
@@ -39,9 +39,10 @@ class QuizSpec extends BaseSpec with Matchers {
   }
 
   {
-    lazy val result = getSomeQuiz
+    lazy val key = quizes.table.keys.head
+    lazy val result = getSomeQuiz(key)
 
-    "/quiz/b432abf9e90d7abdbda8db220f0e5988" should "return 200" in {
+    "/quiz/{key}" should "return 200" in {
       result.status should be(Status.Ok)
     }
 
@@ -54,22 +55,38 @@ class QuizSpec extends BaseSpec with Matchers {
   }
 
   {
-    lazy val result = getRandomQuiz
+    lazy val result = getRandomQuiz(None)
 
     "/quiz" should "redirect" in {
       result.status should be(Status.TemporaryRedirect)
     }
 
-    it should "return to quiz/{key}" in {
+    it should "return quiz/{key}" in {
       val header: Option[Location] = result.headers.get(Location)
 
       header shouldBe defined
       header.get.value should startWith("quiz/")
       header.get.value should not be "quiz/"
     }
+
+    "/quiz with referer {key}" should "return different quiz/{key}" in {
+      assert(quizes.table.keys.size >= 2)
+      val location: Option[Location] = result.headers.get(Location)
+      val key = location.get.value.drop(5)
+      lazy val resultWithReferer = getRandomQuiz(Some(key))
+
+      resultWithReferer.status should be(Status.TemporaryRedirect)
+
+      val header: Option[Location] = resultWithReferer.headers.get(Location)
+
+      header shouldBe defined
+      header.get.value should startWith("quiz/")
+      header.get.value should not be "quiz/"
+      header.get.value should not be s"quiz/$key"
+    }
   }
 
-  val quizes = new Quizes {
+  lazy val quizes = new Quizes {
     override val all = List(
       UnstressedDaar("Het heeft",
         List("er", "daar"),
@@ -83,8 +100,8 @@ class QuizSpec extends BaseSpec with Matchers {
     )
   }
 
-  private[this] def get(uri: Uri): Response[IO] = {
-    val getHW = Request[IO](Method.GET, uri)
+  private[this] def get(uri: Uri, headers: Headers = Headers.empty): Response[IO] = {
+    val getHW = Request[IO](Method.GET, uri, headers = headers)
     val quiz = Quiz.impl[IO](quizes)
     ErkomtRoutes.quizRoutes(quiz).orNotFound(getHW).unsafeRunSync()
   }
@@ -97,12 +114,15 @@ class QuizSpec extends BaseSpec with Matchers {
     get(Uri.uri("/quiz/"))
   }
 
-  private[this] val getSomeQuiz: Response[IO] = {
-    get(Uri.uri("/quiz/b432abf9e90d7abdbda8db220f0e5988"))
+  private[this] def getSomeQuiz(key: String): Response[IO] = {
+    get(Uri.fromString(s"/quiz/$key").right.get)
   }
 
-  private[this] def getRandomQuiz(): Response[IO] = {
-    get(Uri.uri("/quiz"))
+  private[this] def getRandomQuiz(skipKey: Option[String]): Response[IO] = skipKey match {
+    case None =>
+      get(Uri.uri("/quiz"))
+    case Some(key) =>
+      get(Uri.uri("/quiz"), Headers(Referer(Uri.fromString(s"https://0.0.0.0/quiz/$key").right.get)))
   }
 
 }
