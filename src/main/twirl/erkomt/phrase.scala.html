@@ -55,7 +55,45 @@ p {
     <script>
 document.addEventListener('DOMContentLoaded',function() {
     document.querySelector('select[id="quiz-select"]').onchange=changeEventHandler;
+
+    let last_known_scroll_position = 0;
+    let ticking = false;
+    let el = document.getElementById('body');
+
+    function action(scroll_pos) {
+        console.log("...", scroll_pos);
+        var d = 255 - scroll_pos
+        el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
+
+        if (scroll_pos > 30) {
+          loadNewPhrase();
+        }
+    }
+
+    window.addEventListener('scroll', function (e) {
+        last_known_scroll_position = Math.max(Math.abs(window.scrollY), Math.abs(window.scrollX));
+
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                action(last_known_scroll_position);
+                ticking = false;
+            });
+
+            ticking = true;
+        }
+    });
+
+    console.log("initialized.");
+
 },false);
+
+function loadNewPhrase() {
+  document.location = document.location + "/.."
+}
+
+function scrollEventHandler(event) {
+
+}
 
 function changeEventHandler(event) {
     if (!event.target.value) {
@@ -71,8 +109,9 @@ function changeEventHandler(event) {
     }
 }
     </script>
+    <title>Er of Daar?</title>
 </head>
-<body>
+<body id="body">
 <div class="container">
     <p>
         @{phrase.left}

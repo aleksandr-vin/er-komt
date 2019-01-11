@@ -69,9 +69,23 @@ class QuizSpec extends BaseSpec with Matchers {
     }
   }
 
+  val quizes = new Quizes {
+    override val all = List(
+      UnstressedDaar("Het heeft",
+        List("er", "daar"),
+        List("er", "daar"),
+        "gisteren heel hard geregend"),
+      UnstressedDaar(
+        "Kun je",
+        List("er", "daar"),
+        List("daar"),
+        "niet tegen, dan kun je maar beter naar vrouwen van andere nationaliteiten kijken")
+    )
+  }
+
   private[this] def get(uri: Uri): Response[IO] = {
     val getHW = Request[IO](Method.GET, uri)
-    val quiz = Quiz.impl[IO]
+    val quiz = Quiz.impl[IO](quizes)
     ErkomtRoutes.quizRoutes(quiz).orNotFound(getHW).unsafeRunSync()
   }
 
