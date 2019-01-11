@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded',function() {
     }
 
     window.addEventListener('scroll', function (e) {
-        last_known_scroll_position = Math.max(Math.abs(window.scrollY), Math.abs(window.scrollX));
+        last_known_scroll_position = Math.abs(window.scrollX);
 
         if (!ticking) {
             window.requestAnimationFrame(function() {
