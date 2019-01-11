@@ -1,0 +1,82 @@
+@import com.xvygyjau.erkomt.UnstressedDaar
+
+@(phrase: UnstressedDaar, key: String)
+<html>
+<head>
+    <style>
+@@import url('https://fonts.googleapis.com/css?family=Nanum+Myeongjo');
+
+.container {
+   font-family: 'Nanum Myeongjo', serif;
+}
+
+.quiz-answers {
+}
+
+blockquote {
+    background: #eee;
+    border-radius: 5px;
+}
+
+blockquote p {
+    padding: 15px;
+}
+
+blockquote p::before {
+    content: '\201C';
+}
+
+blockquote p::after {
+    content: '\201D';
+}
+
+a {
+    text-decoration: none;
+}
+
+@@media screen and (max-width: 600px) {
+}
+    </style>
+    <title>Er kommen aantekeningen voor '@{phrase.left} __ @{phrase.right}'</title>
+</head>
+<body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/nl_NL/sdk.js#xfbml=1&version=v3.2&appId=391068474971618';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
+<div class="container">
+    <h1>Aantekeningen voor</h1>
+
+    <blockquote cite="@{phrase.cite.url}">
+        <p>@{phrase.left} __ @{phrase.right}</p>
+    </blockquote>
+    <cite>– @{phrase.cite.site}, <a target="_blank" href="@{phrase.cite.url}">@{phrase.cite.name}</a></cite>
+
+    <p>
+        <a href="/quiz/@key">Probeer de quiz...</a>
+        of
+        <span class="quiz-answers">
+            <select>
+                <option value="--">kijk antwoorden</option>
+                @for(opt <- phrase.answer) { <option value="@opt">@opt</option> }
+            </select>
+        </span>
+    </p>
+
+    <div class="share-buttons">
+        <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-dnt="true" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        <div class="fb-share-button" data-href="https://er-komt.herokuapp.com/quiz/@key/notes" data-layout="button" data-size="small" data-mobile-iframe="true"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fer-komt.herokuapp.com%2Fquiz%2F@key%2Fnotes" class="fb-xfbml-parse-ignore">Share</a></div>
+        <a class="github-button" href="https://github.com/aleksandr-vin/er-komt/issues" aria-label="Issue aleksandr-vin/er-komt on GitHub">Issue</a>
+    </div>
+
+    <div class="fb-comments" data-href="https://er-komt.herokuapp.com/quiz/@key/notes" data-order-by="reverse_time" data-numposts="5" data-width="100%"></div>
+</div>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>

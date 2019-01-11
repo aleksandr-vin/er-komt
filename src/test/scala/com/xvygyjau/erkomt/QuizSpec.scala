@@ -91,12 +91,14 @@ class QuizSpec extends BaseSpec with Matchers {
       UnstressedDaar("Het heeft",
         List("er", "daar"),
         List("er", "daar"),
-        "gisteren heel hard geregend"),
+        "gisteren heel hard geregend",
+        Cite("","","")),
       UnstressedDaar(
         "Kun je",
         List("er", "daar"),
         List("daar"),
-        "niet tegen, dan kun je maar beter naar vrouwen van andere nationaliteiten kijken")
+        "niet tegen, dan kun je maar beter naar vrouwen van andere nationaliteiten kijken",
+        Cite("","",""))
     )
   }
 

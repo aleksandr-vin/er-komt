@@ -52,6 +52,8 @@ object ErkomtRoutes {
     val dsl = new Http4sDsl[F] {}
     import dsl._
     HttpRoutes.of[F] {
+      case GET -> Root =>
+        TemporaryRedirect(Location(Uri.uri("quiz")))
       case request @ GET -> Root / "quiz" =>
         val refKey = getRefererQuizKey(request.headers)
         for {
@@ -66,15 +68,18 @@ object ErkomtRoutes {
               }
             )
         } yield resp
+      case GET -> Root / "quiz" / "" =>
+        TemporaryRedirect(Location(Uri.uri("..")))
       case GET -> Root / "quiz" / key if !key.isEmpty =>
         for {
           phrase <- H.getPhrase(key)
-          resp <- Ok(erkomt.html.phrase(phrase))
+          resp <- Ok(erkomt.html.phrase(phrase, key))
         } yield resp
-      case GET -> Root / "quiz" / "" =>
-        TemporaryRedirect(Location(Uri.uri("..")))
-      case GET -> Root =>
-        TemporaryRedirect(Location(Uri.uri("quiz")))
+      case GET -> Root / "quiz" / key / "notes" if !key.isEmpty =>
+        for {
+          phrase <- H.getPhrase(key)
+          resp <- Ok(erkomt.html.notes(phrase, key))
+        } yield resp
     }
   }
 

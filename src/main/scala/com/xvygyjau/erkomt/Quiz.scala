@@ -9,17 +9,20 @@ trait Quiz[F[_]] {
   def getRandomPhraseKey(skipKey: Option[String]): F[String]
 }
 
+case class Cite(url: String, name: String, site: String)
+
 case class UnstressedDaar(left: String,
                           quiz: List[String],
                           answer: List[String],
-                          right: String)
+                          right: String,
+                          cite: Cite)
 // http://www.dutchgrammar.com/en/?n=WordOrder.37
 
 trait Quizes {
   def all: List[UnstressedDaar]
 
   lazy val table: Map[String, UnstressedDaar] = all.map {
-    case x @ UnstressedDaar(left, _, _, right) =>
+    case x @ UnstressedDaar(left, _, _, right, _) =>
       Ids.md5HashString(left ++ right) -> x
   }.toMap
 }
