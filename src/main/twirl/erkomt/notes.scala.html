@@ -40,6 +40,15 @@ a {
     <title>Er kommen aantekeningen voor '@{phrase.left} __ @{phrase.right}'</title>
 </head>
 <body>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/nl_NL/sdk.js#xfbml=1&version=v3.2&appId=391068474971618';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+
 <div class="container">
     <h1>Aantekeningen voor</h1>
 
@@ -47,14 +56,27 @@ a {
         <p>@{phrase.left} __ @{phrase.right}</p>
     </blockquote>
     <cite>– @{phrase.cite.site}, <a target="_blank" href="@{phrase.cite.url}">@{phrase.cite.name}</a></cite>
+
     <p>
+        <a href="/quiz/@key">Probeer de quiz...</a>
+        of
         <span class="quiz-answers">
-            <ul>
-                <lh>Opties:</lh>
-                @for(opt <- phrase.answer) { <li>@opt</li> }
-            </ul>
+            <select>
+                <option value="--">kijk antwoorden</option>
+                @for(opt <- phrase.answer) { <option value="@opt">@opt</option> }
+            </select>
         </span>
     </p>
+
+    <div class="share-buttons">
+        <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-dnt="true" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+        <div class="fb-share-button" data-href="https://developers.facebook.com/docs/plugins/" data-layout="button" data-size="small" data-mobile-iframe="true"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Поделиться</a></div>
+        <a class="github-button" href="https://github.com/aleksandr-vin/er-komt/issues" aria-label="Issue aleksandr-vin/er-komt on GitHub">Issue</a>
+    </div>
+
+    <div class="fb-comments" data-href="https://er-komt.herokuapp.com/quiz/@key/notes" data-order-by="reverse_time" data-numposts="5" data-width="100%"></div>
 </div>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
 </body>
 </html>
