@@ -1,10 +1,6 @@
 package com.xvygyjau.erkomt
 
-import cats.effect.{
-  ConcurrentEffect,
-  Timer,
-  ContextShift
-}
+import cats.effect.{ConcurrentEffect, Timer, ContextShift}
 import cats.implicits._
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.client.blaze.BlazeClientBuilder
@@ -34,7 +30,8 @@ object ErkomtServer {
         ErkomtRoutes.helloWorldRoutes[F](helloWorldAlg) <+>
           ErkomtRoutes.jokeRoutes[F](jokeAlg) <+>
           ErkomtRoutes.healthRoutes[F](healthAlg) <+>
-        ErkomtRoutes.quizRoutes[F](quizAlg)
+          ErkomtRoutes.quizRoutes[F](quizAlg) <+>
+          ErkomtRoutes.staticFilesRoutes
       ).orNotFound
 
       // With Middlewares in place
