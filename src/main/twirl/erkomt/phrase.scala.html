@@ -56,8 +56,10 @@ p {
 document.addEventListener('DOMContentLoaded',function() {
 
     let answerQuality = undefined;
+    let answer = undefined;
 
     document.querySelector('select[id="quiz-select"]').onchange = function (event) {
+        answer = event.target.value;
         if (!event.target.value) {
           event.target.style.color = '';
           delete answerQuality;
@@ -91,7 +93,7 @@ document.addEventListener('DOMContentLoaded',function() {
         }
 
         if (force > 250 || force > 30 && !isMobileDevice()) {
-          setTimeout(function () { loadNewPhrase({ force: force }); }, 1000);
+          setTimeout(function () { loadNewPhrase({ force: force, answer: answer, answerQuality: answerQuality }); }, 1000);
           return true;
         }
 
@@ -112,8 +114,14 @@ document.addEventListener('DOMContentLoaded',function() {
 
 },false);
 
+const buildURLQuery = obj =>
+    Object.entries(obj)
+        .filter(pair => typeof pair[1] !== 'undefined')
+        .map(pair => pair.map(encodeURIComponent).join('='))
+        .join('&');
+
 function loadNewPhrase(attrs) {
-  document.location = "/quiz" + "?force=" + attrs.force;
+    document.location = "/quiz?" + buildURLQuery(attrs)
 }
 
 @* Credits to https://coderwall.com/p/i817wa/one-line-function-to-detect-mobile-devices-with-javascript *@
