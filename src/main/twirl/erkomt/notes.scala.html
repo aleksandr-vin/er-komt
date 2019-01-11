@@ -1,0 +1,60 @@
+@import com.xvygyjau.erkomt.UnstressedDaar
+
+@(phrase: UnstressedDaar, key: String)
+<html>
+<head>
+    <style>
+@@import url('https://fonts.googleapis.com/css?family=Nanum+Myeongjo');
+
+.container {
+   font-family: 'Nanum Myeongjo', serif;
+}
+
+.quiz-answers {
+}
+
+blockquote {
+    background: #eee;
+    border-radius: 5px;
+}
+
+blockquote p {
+    padding: 15px;
+}
+
+blockquote p::before {
+    content: '\201C';
+}
+
+blockquote p::after {
+    content: '\201D';
+}
+
+a {
+    text-decoration: none;
+}
+
+@@media screen and (max-width: 600px) {
+}
+    </style>
+    <title>Er kommen aantekeningen voor '@{phrase.left} __ @{phrase.right}'</title>
+</head>
+<body>
+<div class="container">
+    <h1>Aantekeningen voor</h1>
+
+    <blockquote cite="@{phrase.cite.url}">
+        <p>@{phrase.left} __ @{phrase.right}</p>
+    </blockquote>
+    <cite>– @{phrase.cite.site}, <a target="_blank" href="@{phrase.cite.url}">@{phrase.cite.name}</a></cite>
+    <p>
+        <span class="quiz-answers">
+            <ul>
+                <lh>Opties:</lh>
+                @for(opt <- phrase.answer) { <li>@opt</li> }
+            </ul>
+        </span>
+    </p>
+</div>
+</body>
+</html>
