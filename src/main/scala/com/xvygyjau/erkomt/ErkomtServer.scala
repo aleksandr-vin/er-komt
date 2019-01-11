@@ -24,7 +24,7 @@ object ErkomtServer {
       helloWorldAlg = HelloWorld.impl[F]
       jokeAlg = Jokes.impl[F](client)
       healthAlg = Health.impl[F]
-      quizAlg = Quiz.impl[F]
+      quizAlg = Quiz.impl[F](QuizesSet)
 
       // Combine Service Routes into an HttpApp
       // Can also be done via a Router if you

@@ -54,25 +54,71 @@ p {
 
     <script>
 document.addEventListener('DOMContentLoaded',function() {
-    document.querySelector('select[id="quiz-select"]').onchange=changeEventHandler;
+
+    let answerQuality = undefined;
+
+    document.querySelector('select[id="quiz-select"]').onchange = function (event) {
+        if (!event.target.value) {
+          event.target.style.color = '';
+          delete answerQuality;
+        }
+        @for(opt <- phrase.answer) {
+        else if (event.target.value == '@opt') {
+          event.target.style.color = 'green';
+          answerQuality = true;
+        }
+        }
+        else {
+          event.target.style.color = 'red';
+          answerQuality = false;
+        }
+    };
+
+    let last_known_scroll_position = 0;
+    let ticking = false;
+    let el = document.getElementById('body');
+
+    function action(scroll_pos) {
+        var d = 255 - scroll_pos
+        if (typeof answerQuality == 'undefined') {
+            el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
+        }
+        else if (answerQuality) {
+            el.style.backgroundColor = 'rgb(' + d + ', 255, ' + d + ')';
+        }
+        else {
+            el.style.backgroundColor = 'rgb(255, ' + d + ', ' + d + ')';
+        }
+
+        if (scroll_pos > 30) {
+          setTimeout(loadNewPhrase, 1000);
+          return true;
+        }
+
+        return false;
+    }
+
+    window.addEventListener('scroll', function (e) {
+        last_known_scroll_position = Math.max(Math.abs(window.scrollY), Math.abs(window.scrollX));
+
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                ticking = action(last_known_scroll_position);
+            });
+
+            ticking = true;
+        }
+    });
+
 },false);
 
-function changeEventHandler(event) {
-    if (!event.target.value) {
-      event.target.style.color = '';
-    }
-    @for(opt <- phrase.answer) {
-    else if (event.target.value == '@opt') {
-      event.target.style.color = 'green';
-    }
-    }
-    else {
-      event.target.style.color = 'red';
-    }
+function loadNewPhrase() {
+  document.location = "/quiz"
 }
     </script>
+    <title>Er komt... '@{phrase.left} __ @{phrase.right}'</title>
 </head>
-<body>
+<body id="body">
 <div class="container">
     <p>
         @{phrase.left}
