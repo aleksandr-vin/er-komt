@@ -54,7 +54,25 @@ p {
 
     <script>
 document.addEventListener('DOMContentLoaded',function() {
-    document.querySelector('select[id="quiz-select"]').onchange=changeEventHandler;
+
+    let answerQuality = undefined;
+
+    document.querySelector('select[id="quiz-select"]').onchange = function (event) {
+        if (!event.target.value) {
+          event.target.style.color = '';
+          delete answerQuality;
+        }
+        @for(opt <- phrase.answer) {
+        else if (event.target.value == '@opt') {
+          event.target.style.color = 'green';
+          answerQuality = true;
+        }
+        }
+        else {
+          event.target.style.color = 'red';
+          answerQuality = false;
+        }
+    };
 
     let last_known_scroll_position = 0;
     let ticking = false;
@@ -63,7 +81,15 @@ document.addEventListener('DOMContentLoaded',function() {
     function action(scroll_pos) {
         console.log("...", scroll_pos);
         var d = 255 - scroll_pos
-        el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
+        if (typeof answerQuality == 'undefined') {
+            el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
+        }
+        else if (answerQuality) {
+            el.style.backgroundColor = 'rgb(' + d + ', 255, ' + d + ')';
+        }
+        else {
+            el.style.backgroundColor = 'rgb(255, ' + d + ', ' + d + ')';
+        }
 
         if (scroll_pos > 30) {
           loadNewPhrase();
@@ -89,20 +115,6 @@ document.addEventListener('DOMContentLoaded',function() {
 
 function loadNewPhrase() {
   document.location = document.location + "/.."
-}
-
-function changeEventHandler(event) {
-    if (!event.target.value) {
-      event.target.style.color = '';
-    }
-    @for(opt <- phrase.answer) {
-    else if (event.target.value == '@opt') {
-      event.target.style.color = 'green';
-    }
-    }
-    else {
-      event.target.style.color = 'red';
-    }
 }
     </script>
     <title>Er of Daar?</title>
