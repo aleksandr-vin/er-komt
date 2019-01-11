@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded',function() {
     let ticking = false;
     let el = document.getElementById('body');
 
-    function action(scroll_pos) {
-        var d = 255 - scroll_pos
+    function action(force) {
+        var d = 255 - force
         if (typeof answerQuality == 'undefined') {
             el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
         }
@@ -90,8 +90,8 @@ document.addEventListener('DOMContentLoaded',function() {
             el.style.backgroundColor = 'rgb(255, ' + d + ', ' + d + ')';
         }
 
-        if (scroll_pos > 30) {
-          setTimeout(loadNewPhrase, 1000);
+        if (force > 250 || force > 30 && !isMobileDevice()) {
+          setTimeout(function () { loadNewPhrase({ force: force }); }, 1000);
           return true;
         }
 
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded',function() {
     }
 
     window.addEventListener('scroll', function (e) {
-        last_known_scroll_position = Math.abs(window.scrollX);
+        last_known_scroll_position = Math.max(Math.max(-window.scrollY, 0), Math.abs(window.scrollX));
 
         if (!ticking) {
             window.requestAnimationFrame(function() {
@@ -112,8 +112,13 @@ document.addEventListener('DOMContentLoaded',function() {
 
 },false);
 
-function loadNewPhrase() {
-  document.location = "/quiz"
+function loadNewPhrase(attrs) {
+  document.location = "/quiz" + "?force=" + attrs.force;
+}
+
+@* Credits to https://coderwall.com/p/i817wa/one-line-function-to-detect-mobile-devices-with-javascript *@
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
 }
     </script>
     <title>Er komt... '@{phrase.left} __ @{phrase.right}'</title>
