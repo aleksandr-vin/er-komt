@@ -79,7 +79,6 @@ document.addEventListener('DOMContentLoaded',function() {
     let el = document.getElementById('body');
 
     function action(scroll_pos) {
-        console.log("...", scroll_pos);
         var d = 255 - scroll_pos
         if (typeof answerQuality == 'undefined') {
             el.style.backgroundColor = 'rgb(' + d + ', ' + d + ', ' + d + ')';
@@ -92,8 +91,11 @@ document.addEventListener('DOMContentLoaded',function() {
         }
 
         if (scroll_pos > 30) {
-          loadNewPhrase();
+          setTimeout(loadNewPhrase, 1000);
+          return true;
         }
+
+        return false;
     }
 
     window.addEventListener('scroll', function (e) {
@@ -101,8 +103,7 @@ document.addEventListener('DOMContentLoaded',function() {
 
         if (!ticking) {
             window.requestAnimationFrame(function() {
-                action(last_known_scroll_position);
-                ticking = false;
+                ticking = action(last_known_scroll_position);
             });
 
             ticking = true;
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded',function() {
 },false);
 
 function loadNewPhrase() {
-  document.location = document.location + "/.."
+  document.location = "/quiz"
 }
     </script>
     <title>Er komt... '@{phrase.left} __ @{phrase.right}'</title>
