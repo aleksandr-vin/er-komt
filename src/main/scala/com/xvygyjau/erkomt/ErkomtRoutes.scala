@@ -1,13 +1,14 @@
 package com.xvygyjau.erkomt
 
-import cats.effect.{ContextShift, IO, Sync}
+import java.util.concurrent._
+
+import cats.effect.{ContextShift, Sync}
 import cats.implicits._
-import org.http4s.{Headers, HttpRoutes, Request, StaticFile, Uri, headers}
 import org.http4s.dsl._
-import org.http4s.dsl.io._
 import org.http4s.headers.Location
 import org.http4s.twirl._
-import java.util.concurrent._
+import org.http4s.{Headers, HttpRoutes, StaticFile, Uri, headers}
+
 import scala.concurrent.ExecutionContext
 
 object ErkomtRoutes {
@@ -83,33 +84,32 @@ object ErkomtRoutes {
     }
   }
 
-  def staticFilesRoutes: HttpRoutes[IO] = {
+  def staticFilesRoutes[F[_]: Sync](
+      implicit C: ContextShift[F]): HttpRoutes[F] = {
 
     val blockingEc =
       ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
-    implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
 
-    def static(file: String, request: Request[IO]) =
-      StaticFile
-        .fromResource("/static/" + file, blockingEc, Some(request))
-        .getOrElseF(NotFound())
-
-    val dsl = new Http4sDsl[IO] {}
+    val dsl = new Http4sDsl[F] {}
     import dsl._
-    HttpRoutes.of[IO] {
+    HttpRoutes.of[F] {
       case request @ GET -> Root / "static" / path
-          if List(".js", ".css", ".map", ".html", ".webm").exists(
-            path.endsWith) =>
-        static(path, request)
+          if List(".js", ".css", ".map", ".html", ".webm", ".png", ".ico")
+            .exists(path.endsWith) =>
+        StaticFile
+          .fromResource("/static/" + path, blockingEc, Some(request))
+          .getOrElseF(NotFound())
     }
   }
 
-  private[erkomt] def getRefererQuizKey(requestHeaders: Headers): Option[String] = {
+  private[erkomt] def getRefererQuizKey(
+      requestHeaders: Headers): Option[String] = {
     headers.Referer
       .from(requestHeaders)
       .map(_.uri.path.toString.toList)
       .collect {
-        case '/' :: 'q' :: 'u' :: 'i' :: 'z' :: '/' :: (key: List[Char]) if key.nonEmpty =>
+        case '/' :: 'q' :: 'u' :: 'i' :: 'z' :: '/' :: (key: List[Char])
+            if key.nonEmpty =>
           key.mkString
       }
   }
