@@ -1,7 +1,10 @@
 package com.xvygyjau.erkomt
 
+import java.time.Instant
+
 import cats.Applicative
 import cats.implicits._
+
 import scala.util.Random
 
 trait Quiz[F[_]] {
@@ -38,11 +41,12 @@ object Quiz {
 
     def getRandomPhraseKey(skipKey: Option[String],
                            sortSalt: Option[Int]): F[String] = {
-      skipKey.foreach(_ =>
-        sortSalt.foreach { seed =>
-          Random.setSeed(seed)
-      })
-      val randomPhrases = Random.shuffle(quizes.table.keys).toList
+      for {
+        _ <- skipKey
+        seed <- sortSalt
+      } yield Random.setSeed(seed)
+      val keys: List[String] = quizes.table.keys.toList
+      val randomPhrases = Random.shuffle(keys)
       randomPhrases.span(!skipKey.contains(_)) match {
         case (passed, List())      => passed.head
         case (passed, _ :: List()) => passed.head
