@@ -7,7 +7,7 @@ import cats.implicits._
 import org.http4s.dsl._
 import org.http4s.headers.Location
 import org.http4s.twirl._
-import org.http4s.{Headers, HttpRoutes, StaticFile, Uri, headers}
+import org.http4s.{Headers, HttpRoutes, Request, StaticFile, Uri, headers}
 
 import scala.concurrent.ExecutionContext
 
@@ -57,8 +57,9 @@ object ErkomtRoutes {
         TemporaryRedirect(Location(Uri.uri("quiz")))
       case request @ GET -> Root / "quiz" =>
         val refKey = getRefererQuizKey(request.headers)
+        val sortSalt = getSortSalt(request)
         for {
-          key <- H.getRandomPhraseKey(refKey)
+          key <- H.getRandomPhraseKey(refKey, sortSalt)
           resp <- Uri
             .fromString(s"quiz/$key")
             .fold(
@@ -112,5 +113,16 @@ object ErkomtRoutes {
             if key.nonEmpty =>
           key.mkString
       }
+  }
+
+  private[erkomt] def getSortSalt[F[_]: Sync](
+      request: Request[F]): Option[Int] = {
+    val traits = List(request.remoteAddr,
+                      headers.`User-Agent`
+                        .from(request.headers))
+    traits.flatten match {
+      case List() => None
+      case l      => Some(l.hashCode())
+    }
   }
 }
