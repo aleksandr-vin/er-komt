@@ -2,7 +2,7 @@ package com.xvygyjau.erkomt
 
 import cats.effect.IO
 import org.http4s._
-import org.http4s.headers.{Location, Referer}
+import org.http4s.headers.{AgentProduct, Location, Referer, `User-Agent`}
 import org.http4s.implicits._
 import org.scalatest.Matchers
 
@@ -69,40 +69,48 @@ class QuizSpec extends BaseSpec with Matchers {
       header.get.value should not be "quiz/"
     }
 
-    "/quiz with referer {key}" should "return different quiz/{key}" in {
-      assert(quizes.table.keys.size >= 2)
-      val location: Option[Location] = result.headers.get(Location)
-      val key = location.get.value.drop(5)
-      lazy val resultWithReferer = getRandomQuiz(Some(key))
+    assert(quizes.table.keys.size >= 2)
+    val location: Option[Location] = result.headers.get(Location)
+    val key = location.get.value.drop(5)
+    lazy val result2 = getRandomQuiz(Some(key))
 
-      resultWithReferer.status should be(Status.TemporaryRedirect)
+    "/quiz with referer {key}" should "redirect" in {
+      result2.status should be(Status.TemporaryRedirect)
+    }
 
-      val header: Option[Location] = resultWithReferer.headers.get(Location)
+    val location2: Option[Location] = result2.headers.get(Location)
 
-      header shouldBe defined
-      header.get.value should startWith("quiz/")
-      header.get.value should not be "quiz/"
-      header.get.value should not be s"quiz/$key"
+    it should "return different quiz/{key}" in {
+      location2 shouldBe defined
+      location2.get.value should startWith("quiz/")
+      location2.get.value should not be "quiz/"
+      location2.get.value should not be s"quiz/$key"
+    }
+
+    assert(quizes.table.keys.size >= 3)
+    lazy val result3 = getRandomQuiz(Some(key))
+
+    it should "constantly return same quiz/{key}" in {
+      val location3: Option[Location] = result3.headers.get(Location)
+      location3 shouldBe defined
+      location3.get.value should be (location2.get.value)
     }
   }
 
-  lazy val quizes = new Quizes {
-    override val all = List(
-      UnstressedDaar("Het heeft",
-        List("er", "daar"),
-        List("er", "daar"),
-        "gisteren heel hard geregend",
-        Cite("","","")),
-      UnstressedDaar(
-        "Kun je",
-        List("er", "daar"),
-        List("daar"),
-        "niet tegen, dan kun je maar beter naar vrouwen van andere nationaliteiten kijken",
-        Cite("","",""))
-    )
+  object FakeQuizes {
+    def apply(chars: String): Quizes = new Quizes {
+      override val all = chars
+        .map(_.toString)
+        .map(a =>
+          UnstressedDaar(a, List("er"), List("er"), a, Cite("", "", "")))
+        .toList
+    }
   }
 
-  private[this] def get(uri: Uri, headers: Headers = Headers.empty): Response[IO] = {
+  lazy val quizes = FakeQuizes("abcd")
+
+  private[this] def get(uri: Uri,
+                        headers: Headers = Headers.empty): Response[IO] = {
     val getHW = Request[IO](Method.GET, uri, headers = headers)
     val quiz = Quiz.impl[IO](quizes)
     ErkomtRoutes.quizRoutes(quiz).orNotFound(getHW).unsafeRunSync()
@@ -120,11 +128,15 @@ class QuizSpec extends BaseSpec with Matchers {
     get(Uri.fromString(s"/quiz/$key").right.get)
   }
 
-  private[this] def getRandomQuiz(skipKey: Option[String]): Response[IO] = skipKey match {
-    case None =>
-      get(Uri.uri("/quiz"))
-    case Some(key) =>
-      get(Uri.uri("/quiz"), Headers(Referer(Uri.fromString(s"https://0.0.0.0/quiz/$key").right.get)))
-  }
+  private[this] def getRandomQuiz(skipKey: Option[String]): Response[IO] =
+    skipKey match {
+      case None =>
+        get(Uri.uri("/quiz"))
+      case Some(key) =>
+        get(Uri.uri("/quiz"),
+            Headers(
+              Referer(Uri.fromString(s"https://0.0.0.0/quiz/$key").right.get),
+              `User-Agent`(AgentProduct("test"))))
+    }
 
 }
