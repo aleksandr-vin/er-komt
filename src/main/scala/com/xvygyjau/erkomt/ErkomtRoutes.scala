@@ -1,5 +1,6 @@
 package com.xvygyjau.erkomt
 
+import java.time.Instant
 import java.util.concurrent._
 
 import cats.effect.{ContextShift, Sync}
@@ -122,7 +123,10 @@ object ErkomtRoutes {
                         .from(request.headers))
     traits.flatten match {
       case List() => None
-      case l      => Some(l.hashCode())
+      case l =>
+        // Making different random shuffling every hour for every "user"
+        val distinctHours = Some(Instant.now.toEpochMilli / 1000 / 60 / 60)
+        Some((distinctHours :: l).hashCode())
     }
   }
 }
