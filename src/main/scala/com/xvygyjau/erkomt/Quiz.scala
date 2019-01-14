@@ -6,7 +6,8 @@ import scala.util.Random
 
 trait Quiz[F[_]] {
   def getPhrase(key: String): F[UnstressedDaar]
-  def getRandomPhraseKey(skipKey: Option[String], sortSalt: Option[Int]): F[String]
+  def getRandomPhraseKey(skipKey: Option[String],
+                         sortSalt: Option[Int]): F[String]
 }
 
 case class Cite(url: String, name: String, site: String)
@@ -35,13 +36,17 @@ object Quiz {
       quizes.table(key)
     }.pure[F]
 
-    def getRandomPhraseKey(skipKey: Option[String], sortSalt: Option[Int]): F[String] = {
-      sortSalt.foreach(Random.setSeed(_))
+    def getRandomPhraseKey(skipKey: Option[String],
+                           sortSalt: Option[Int]): F[String] = {
+      skipKey.foreach(_ =>
+        sortSalt.foreach { seed =>
+          Random.setSeed(seed)
+      })
       val randomPhrases = Random.shuffle(quizes.table.keys).toList
       randomPhrases.span(!skipKey.contains(_)) match {
-        case (passed, List()) => passed.head
+        case (passed, List())      => passed.head
         case (passed, _ :: List()) => passed.head
-        case (_, _ :: tail) => tail.head
+        case (_, _ :: tail)        => tail.head
       }
     }.pure[F]
   }

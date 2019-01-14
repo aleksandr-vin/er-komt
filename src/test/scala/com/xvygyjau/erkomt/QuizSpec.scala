@@ -5,8 +5,9 @@ import org.http4s._
 import org.http4s.headers.{AgentProduct, Location, Referer, `User-Agent`}
 import org.http4s.implicits._
 import org.scalatest.Matchers
+import org.scalatest.concurrent.Eventually
 
-class QuizSpec extends BaseSpec with Matchers {
+class QuizSpec extends BaseSpec with Matchers with Eventually {
 
   {
     lazy val result = getRoot
@@ -71,6 +72,22 @@ class QuizSpec extends BaseSpec with Matchers {
 
     assert(quizes.table.keys.size >= 2)
     val location: Option[Location] = result.headers.get(Location)
+
+
+    it should "every time return different quiz/{key}" in {
+      // Using eventually to bypass the real random distribution on small set of quizes
+      eventually {
+        lazy val result2ndNone = getRandomQuiz(None)
+        val location2ndNone: Option[Location] =
+          result2ndNone.headers.get(Location)
+        location2ndNone shouldBe defined
+        location2ndNone.get.value should startWith("quiz/")
+        location2ndNone.get.value should not be "quiz/"
+        location2ndNone.get.value should not be location.get.value
+      }
+    }
+
+    assert(quizes.table.keys.size >= 2)
     val key = location.get.value.drop(5)
     lazy val result2 = getRandomQuiz(Some(key))
 
@@ -93,7 +110,7 @@ class QuizSpec extends BaseSpec with Matchers {
     it should "constantly return same quiz/{key}" in {
       val location3: Option[Location] = result3.headers.get(Location)
       location3 shouldBe defined
-      location3.get.value should be (location2.get.value)
+      location3.get.value should be(location2.get.value)
     }
   }
 
@@ -131,7 +148,7 @@ class QuizSpec extends BaseSpec with Matchers {
   private[this] def getRandomQuiz(skipKey: Option[String]): Response[IO] =
     skipKey match {
       case None =>
-        get(Uri.uri("/quiz"))
+        get(Uri.uri("/quiz"), Headers(`User-Agent`(AgentProduct("test"))))
       case Some(key) =>
         get(Uri.uri("/quiz"),
             Headers(
