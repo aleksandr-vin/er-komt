@@ -73,10 +73,13 @@ object ErkomtRoutes {
         } yield resp
       case GET -> Root / "quiz" / "" =>
         TemporaryRedirect(Location(Uri.uri("..")))
-      case GET -> Root / "quiz" / key if !key.isEmpty =>
+      case request @ GET -> Root / "quiz" / key if !key.isEmpty =>
+        val refKey = getRefererQuizKey(request.headers)
+        val sortSalt = getSortSalt(request)
         for {
           phrase <- H.getPhrase(key)
-          resp <- Ok(erkomt.html.phrase(phrase, key))
+          prevKey <- H.getPreviousPhraseKey(key, sortSalt)
+          resp <- Ok(erkomt.html.phrase(phrase, key, prevKey))
         } yield resp
       case GET -> Root / "quiz" / key / "notes" if !key.isEmpty =>
         for {

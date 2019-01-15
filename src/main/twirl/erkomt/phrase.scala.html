@@ -1,6 +1,6 @@
 @import com.xvygyjau.erkomt.UnstressedDaar
 
-@(phrase: UnstressedDaar, key: String)
+@(phrase: UnstressedDaar, key: String, refererKey: String)
 <html>
 <head>
     @head()
@@ -55,9 +55,16 @@ a {
     -webkit-transform: translateX(-50%) translateY(-50%);
     transform: translateX(-50%) translateY(-50%);
   }
+
+  .small-screen {
+    display: none;
+  }
 }
 
 @@media screen and (max-width: 600px) {
+  .big-screen {
+    display: none;
+  }
 }
     </style>
 
@@ -121,6 +128,16 @@ document.addEventListener('DOMContentLoaded',function() {
         }
     });
 
+        let forwardButtons = document.getElementsByClassName("go-forward");
+        for (e in forwardButtons) {
+            forwardButtons[e].onclick = function() { loadNewPhrase({ answer: answer, answerQuality: answerQuality }); };
+        }
+
+        let backButtons = document.getElementsByClassName("go-back");
+        for (e in backButtons) {
+            backButtons[e].onclick = function() { loadPreviousPhrase({ answer: answer, answerQuality: answerQuality }); };
+        }
+
 },false);
 
 const buildURLQuery = obj =>
@@ -133,6 +150,10 @@ function loadNewPhrase(attrs) {
     document.location = "/quiz?" + buildURLQuery(attrs)
 }
 
+function loadPreviousPhrase(attrs) {
+    document.location = "/quiz/@refererKey?" + buildURLQuery(attrs)
+}
+
 @* Credits to https://coderwall.com/p/i817wa/one-line-function-to-detect-mobile-devices-with-javascript *@
 function isMobileDevice() {
     return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
@@ -142,20 +163,36 @@ function isMobileDevice() {
 </head>
 <body id="body">
 <div class="container">
-    <p>
-        @{phrase.left}
 
-        <span id="quiz" class="styled-select">
-        <select id="quiz-select" class="styled-select">
-            <option value="">__</option>
-            @for(opt <- phrase.quiz) {
-            <option value="@opt">@opt</option>
-            }
-        </select>
-        </span>
+        <table>
+        <tr>
+            <td class="big-screen"><p><a href="#" class="go-back">&laquo;</a></p></td>
+            <td>
+                <p>
+                @{phrase.left}
 
-        @{phrase.right}&nbsp;<sup><a href="@key/notes">*</a></sup>
-    </p>
+                <span id="quiz" class="styled-select">
+                <select id="quiz-select" class="styled-select">
+                    <option value="">__</option>
+                    @for(opt <- phrase.quiz) {
+                    <option value="@opt">@opt</option>
+                    }
+                </select>
+                </span>
+
+                @{phrase.right}&nbsp;<sup><a href="@key/notes">*</a></sup>
+                </p>
+            </td>
+            <td class="big-screen"><p><a href="#" class="go-forward">&raquo;</a></p></td>
+        </tr>
+        <tr class="small-screen">
+            <td><center><p><a href="#" class="go-back">&laquo;</a><span>&nbsp;&nbsp;&nbsp;</span><a href="#" class="go-forward">&raquo;</a></p></center></td>
+        </tr>
+        </table>
+
 </div>
+
+
+
 </body>
 </html>

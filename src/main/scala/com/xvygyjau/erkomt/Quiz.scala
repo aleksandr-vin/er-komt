@@ -11,6 +11,8 @@ trait Quiz[F[_]] {
   def getPhrase(key: String): F[UnstressedDaar]
   def getRandomPhraseKey(skipKey: Option[String],
                          sortSalt: Option[Int]): F[String]
+  def getPreviousPhraseKey(key: String,
+                           sortSalt: Option[Int]): F[String]
 }
 
 case class Cite(url: String, name: String, site: String)
@@ -48,6 +50,20 @@ object Quiz {
       val keys: List[String] = quizes.table.keys.toList
       val randomPhrases = Random.shuffle(keys)
       randomPhrases.span(!skipKey.contains(_)) match {
+        case (passed, List())      => passed.head
+        case (passed, _ :: List()) => passed.head
+        case (_, _ :: tail)        => tail.head
+      }
+    }.pure[F]
+
+    def getPreviousPhraseKey(key: String,
+                             sortSalt: Option[Int]): F[String] = {
+      for {
+        seed <- sortSalt
+      } yield Random.setSeed(seed)
+      val keys: List[String] = quizes.table.keys.toList
+      val randomPhrases = Random.shuffle(keys)
+      randomPhrases.reverse.span(key.compareTo(_) != 0) match {
         case (passed, List())      => passed.head
         case (passed, _ :: List()) => passed.head
         case (_, _ :: tail)        => tail.head
